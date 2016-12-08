@@ -60,7 +60,7 @@ public class DemoSelenium {
     }
 
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
     	Proxys proxys=new Proxys();
 
 		List<String[]> proxyList=cn.edu.hfut.dmic.webcollector.net.proxyController.readerProxyFromDir();
@@ -72,18 +72,46 @@ public class DemoSelenium {
 		
         Executor executor=new Executor() {
             @Override
-            public void execute(CrawlDatum datum, CrawlDatums next) throws Exception {
+            public void execute(CrawlDatum datum, CrawlDatums next)  {
+            	java.net.Proxy proxy=proxys.nextRandom();
+            	System.err.println(proxy);
+       		 String []proxyarray=proxy.toString().split(":");
             	/*FirefoxProfile profile = new FirefoxProfile();
             	profile.setPreference("network.proxy.type", 1);
-            	profile.setPreference("network.proxy.http", "localhost");
-            	profile.setPreference("network.proxy.http_port", 3128);
-            	WebDriver driver = new FirefoxDriver(profile);
-            */
-
-            	 System.setProperty("webdriver.chrome.driver", "D:/MyDrivers/chromedriver_win32/chromedriver.exe");
-
-            	  WebDriver driver = new ChromeDriver();
-            	  driver.get("http://www.ccgp.gov.cn/");
+            	profile.setPreference("network.proxy.http", proxyarray[0]);
+            	profile.setPreference("network.proxy.http_port",Integer.valueOf(proxyarray[1]));*/
+            	System.setProperty("webdriver.gecko.driver", "D:/MyDrivers/geckodriver-v0.11.1-win64/geckodriver.exe");
+            	WebDriver driver = new FirefoxDriver();
+            	driver.get("http://www.ccgp.gov.cn/");
+            	 Select select=new Select(driver.findElement(By.id("dbselect")));
+            	 select.selectByValue("bidx");
+            	  WebElement searchBox = driver.findElement(By.id("kw"));
+            	 
+            	  searchBox.sendKeys("视频会议");
+            	  WebElement saveButton = driver.findElement(By.id("doSearch1"));
+            	  saveButton.click();
+            	  org.jsoup.nodes.Document doc = Jsoup.parse(driver.getPageSource());
+            	  System.err.println( driver.getCurrentUrl());
+            	  
+            	  try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+            	
+            	
+            	/* System.setProperty("webdriver.chrome.driver", "D:/MyDrivers/chromedriver_win32/chromedriver.exe");
+            	 boolean finished=false;
+            	 while(!finished){
+            		 java.net.Proxy proxy=proxys.nextRandom();
+            		 String []proxyarray=proxy.toString().split(":");
+            	 ChromeOptions options = new ChromeOptions();
+            	 System.err.println("--proxy-server=socks5://" + proxyarray[0] + ":" + Integer.valueOf(proxyarray[1]));
+            	    options.addArguments("--proxy-server=socks5://" + proxyarray[0] + ":" + Integer.valueOf(proxyarray[1]));
+            	    WebDriver driver = new ChromeDriver(options);
+          
+            	  try {driver.get("http://www.ccgp.gov.cn/");
             	  Thread.sleep(5000);  // Let the user actually see something!
             	 Select select=new Select(driver.findElement(By.id("dbselect")));
             	 select.selectByValue("bidx");
@@ -93,12 +121,21 @@ public class DemoSelenium {
             	  WebElement saveButton = driver.findElement(By.id("doSearch1"));
             	  saveButton.click();
             	  org.jsoup.nodes.Document doc = Jsoup.parse(driver.getPageSource());
-            	  
-            	   // Let the user actually see something!
             	  System.err.println( driver.getCurrentUrl());
             	  
             	  Thread.sleep(5000); 
-            	  driver.quit();
+            	  finished=true;
+            	//  driver.quit();
+            	  }
+            	  catch(Exception ex){
+            		  System.err.println("~~~====~~~");
+            		proxys.remove(proxy.toString());
+            		  driver.quit();
+            	  }
+            	  }*/
+            	   // Let the user actually see something!
+            	
+            	 
             	/*  Thread.sleep(1000); 
               driver.close();
                */
@@ -117,7 +154,12 @@ public class DemoSelenium {
         //创建一个Crawler需要有DBManager和Executor
         Crawler crawler= new Crawler(manager,executor);
         crawler.addSeed("http://www.ccgp.gov.cn/");
-        crawler.start(1);
+        try {
+			crawler.start(1);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
 }
