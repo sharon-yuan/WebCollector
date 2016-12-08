@@ -239,10 +239,17 @@ public class Fetcher {
                         try {
                             executor.execute(crawlDatum, next);
                             LOG.info("done: " + crawlDatum.getKey());
+                           
                             crawlDatum.setStatus(CrawlDatum.STATUS_DB_SUCCESS);
                         } catch (Exception ex) {
                             LOG.info("failed: " + crawlDatum.getKey(), ex);
                             crawlDatum.setStatus(CrawlDatum.STATUS_DB_FAILED);
+                            crawlDatum.incrExecuteCount(1);
+                            System.err.println("next size---"+next.size());
+                            next.add(crawlDatum);
+                            System.err.println("next size---"+next.size());
+                            
+                            throw ex;
                         }
 
                         crawlDatum.incrExecuteCount(1);
@@ -367,6 +374,7 @@ public class Fetcher {
                 }
 
             } while (running && (startedThreads.get() != threads || activeThreads.get() > 0));
+            System.err.println("fetchQ size"+fetchQueue.getSize());
             running = false;
             long waitThreadEndStartTime = System.currentTimeMillis();
             if (activeThreads.get() > 0) {

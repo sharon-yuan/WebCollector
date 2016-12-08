@@ -1,21 +1,8 @@
-/*
- * Copyright (C) 2014 hu
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
 package cn.edu.hfut.dmic.webcollector.example;
+
+import java.util.List;
+
+import org.json.JSONObject;
 
 import cn.edu.hfut.dmic.webcollector.model.CrawlDatum;
 import cn.edu.hfut.dmic.webcollector.model.CrawlDatums;
@@ -24,28 +11,18 @@ import cn.edu.hfut.dmic.webcollector.net.HttpRequest;
 import cn.edu.hfut.dmic.webcollector.net.HttpResponse;
 import cn.edu.hfut.dmic.webcollector.plugin.berkeley.BreadthCrawler;
 
-import org.json.JSONObject;
+public class ProxyCrawler extends BreadthCrawler {
 
-/**
- * 本教程演示了如何自定义http请求
- *
- * 有些爬取任务中，可能只有部分URL需要使用POST请求，我们可以利用2.20版本中添 加的MetaData功能，来完成POST请求的定制。
- *
- * 使用MetaData除了可以标记URL是否需要使用POST，还可以存储POST所需的参数信息
- *
- * 教程中还演示了如何定制Cookie、User-Agent等http请求头信息
- *
- * WebCollector中已经包含了org.json的jar包
- *
- * @author hu
- */
-public class DemoPostCrawler extends BreadthCrawler {
-
-    public DemoPostCrawler(String crawlPath, boolean autoParse) {
+    public ProxyCrawler(String crawlPath, boolean autoParse) {
         super(crawlPath, autoParse);
     }
 
-    @Override
+    public ProxyCrawler(String crawlPath, List<String> seeds, List<String> regexs) {
+		// TODO Auto-generated constructor stub
+    	  super(crawlPath, true);
+	}
+
+	@Override
     public HttpResponse getResponse(CrawlDatum crawlDatum) throws Exception {
         HttpRequest request = new HttpRequest(crawlDatum.getUrl());
         
@@ -54,7 +31,7 @@ public class DemoPostCrawler extends BreadthCrawler {
         if(outputData!=null){
             request.setOutputData(outputData.getBytes("utf-8"));
         }
-        request.setProxy(proxys.nextRandom());
+      
         return request.getResponse();
         /*
         //通过下面方式可以设置Cookie、User-Agent等http请求头信息
@@ -66,10 +43,6 @@ public class DemoPostCrawler extends BreadthCrawler {
 
     @Override
     public void visit(Page page, CrawlDatums next) {
-    	if(page==null){
-    		System.err.println("page ==null");
-    		return;
-    	}
         String jsonStr = page.getHtml();
         JSONObject json = new JSONObject(jsonStr);
         System.out.println("JSON信息：" + json);
@@ -96,5 +69,7 @@ public class DemoPostCrawler extends BreadthCrawler {
 
         crawler.start(1);
     }
+
+
 
 }

@@ -37,7 +37,9 @@ public class DemoDepthCrawler extends BreadthCrawler{
 
     @Override
     public void visit(Page page, CrawlDatums next) {
+    	
         System.out.println("visiting:"+page.getUrl()+"\tdepth="+page.meta("depth"));
+        System.err.println(page.getHtml());
     }
 
     @Override
@@ -50,9 +52,9 @@ public class DemoDepthCrawler extends BreadthCrawler{
         }else{
             depth=Integer.valueOf(page.meta("depth"));
         }
-        depth++;
+        //depth++;
         for(CrawlDatum datum:next){
-            datum.meta("depth", depth+"");
+            datum.meta("depth", 1+"");
         }
     }
     
@@ -60,14 +62,15 @@ public class DemoDepthCrawler extends BreadthCrawler{
     
     public static void main(String[] args) throws Exception {
         DemoDepthCrawler crawler=new DemoDepthCrawler("depth_crawler", true);
-        for(int i=1;i<=5;i++){
-            crawler.addSeed(new CrawlDatum("http://news.hfut.edu.cn/list-1-"+i+".html")
+        /*for(int i=1;i<=5;i++){
+            crawler.addSeed(new CrawlDatum("http://search.ccgp.gov.cn/dataB.jsp?searchtype=1&page_index="+i+"&start_time=2016%3A11%3A29&end_time=2016%3A12%3A06&timeType=2&searchchannel=0&dbselect=bidx&kw=&bidSort=0&pinMu=0&bidType=0&buyerName=&projectId=&displayZone=&zoneId=&agentName=")
                     .meta("depth", "1"));
-        }
+        }*/
+        crawler.addSeed(new CrawlDatum("http://search.ccgp.gov.cn/dataB.jsp?searchtype=1&page_index=1&start_time=2016%3A11%3A29&end_time=2016%3A12%3A06&timeType=2&searchchannel=0&dbselect=bidx&kw=&bidSort=0&pinMu=0&bidType=0&buyerName=&projectId=&displayZone=&zoneId=&agentName="));
         /*正则规则用于控制爬虫自动解析出的链接，用户手动添加的链接，例如添加的种子、或
           在visit方法中添加到next中的链接并不会参与正则过滤*/
         /*自动爬取类似"http://news.hfut.edu.cn/show-xxxxxxhtml"的链接*/
-        crawler.addRegex("http://news.hfut.edu.cn/show-.*html");
+       // crawler.addRegex("http://news.hfut.edu.cn/show-.*html");
         /*不要爬取jpg|png|gif*/
         crawler.addRegex("-.*\\.(jpg|png|gif).*");
         /*不要爬取包含"#"的链接*/
@@ -75,7 +78,7 @@ public class DemoDepthCrawler extends BreadthCrawler{
         
         crawler.setTopN(5);
         
-        crawler.start(3);
+        crawler.start(10);
     }
 
 }

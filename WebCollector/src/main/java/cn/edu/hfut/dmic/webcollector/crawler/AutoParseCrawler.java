@@ -25,8 +25,14 @@ import cn.edu.hfut.dmic.webcollector.model.Links;
 import cn.edu.hfut.dmic.webcollector.model.Page;
 import cn.edu.hfut.dmic.webcollector.net.HttpRequest;
 import cn.edu.hfut.dmic.webcollector.net.HttpResponse;
+import cn.edu.hfut.dmic.webcollector.net.Proxys;
 import cn.edu.hfut.dmic.webcollector.net.Requester;
 import cn.edu.hfut.dmic.webcollector.util.RegexRule;
+
+import java.lang.reflect.Proxy;
+import java.util.List;
+
+
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,20 +52,37 @@ public abstract class AutoParseCrawler extends Crawler implements Executor, Visi
 
     protected Visitor visitor;
     protected Requester requester;
-
+public static Proxys proxys=new Proxys();
     public AutoParseCrawler(boolean autoParse) {
         this.autoParse = autoParse;
         this.visitor = this;
         this.requester = this;
         this.executor = this;
+
+
+		List<String[]> proxyList=cn.edu.hfut.dmic.webcollector.net.proxyController.readerProxyFromDir();
+		System.out.println(proxyList.get(0).length);
+		for(String[]tempProxy:proxyList){
+			System.out.println(tempProxy[0]+" "+tempProxy[1]);
+			proxys.add(tempProxy[0],Integer.valueOf(tempProxy[1]));
+		}
+		
+	
     }
 
     @Override
     public HttpResponse getResponse(CrawlDatum crawlDatum) throws Exception {
-        HttpRequest request = new HttpRequest(crawlDatum);
+        HttpRequest request = new HttpRequest(crawlDatum,proxys.nextRandom());
+      
+    	 
+        
         return request.getResponse();
     }
-
+public static void badProxy(java.net.Proxy proxy){
+	System.err.println(proxy);
+	proxys.remove(proxy.toString());
+	
+}
     /**
      * URL正则约束
      */
@@ -67,8 +90,13 @@ public abstract class AutoParseCrawler extends Crawler implements Executor, Visi
 
     @Override
     public void execute(CrawlDatum datum, CrawlDatums next) throws Exception {
+    	if(requester==null){System.err.println("AutoParseCrawler.execute requester == null");next.add(datum);throw new Exception();}
+    	System.err.println("1");
         HttpResponse response = requester.getResponse(datum);
+        System.err.println("3");
         Page page = new Page(datum, response);
+      System.err.println(response);
+      if(response==null){System.err.println("AutoParseCrawler.execute response == null");next.add(datum);throw new Exception();}
         visitor.visit(page, next);
         if (autoParse && !regexRule.isEmpty()) {
             parseLink(page, next);
@@ -77,8 +105,11 @@ public abstract class AutoParseCrawler extends Crawler implements Executor, Visi
     }
 
     protected void afterParse(Page page, CrawlDatums next) {
-
-    }
+if(page!=null)
+	System.out.println(page.doc().text());
+else
+	System.err.println("-------===>>>AutoParseCrawler.afterParse page==nul<<<=====---------");
+	}
 
     protected void parseLink(Page page, CrawlDatums next) {
         String conteType = page.getResponse().getContentType();

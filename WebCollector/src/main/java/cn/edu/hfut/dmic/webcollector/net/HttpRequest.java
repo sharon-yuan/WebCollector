@@ -17,12 +17,15 @@
  */
 package cn.edu.hfut.dmic.webcollector.net;
 
+import cn.edu.hfut.dmic.webcollector.crawler.AutoParseCrawler;
 import cn.edu.hfut.dmic.webcollector.model.CrawlDatum;
 import cn.edu.hfut.dmic.webcollector.util.Config;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
@@ -80,15 +83,18 @@ public class HttpRequest {
         this.proxy = proxy;
     }
 
-    public HttpResponse getResponse() throws Exception {
-        URL url = new URL(crawlDatum.getUrl());
-        HttpResponse response = new HttpResponse(url);
-        int code = -1;
-        int maxRedirect = Math.max(0, MAX_REDIRECT);
-        HttpURLConnection con = null;
+    public HttpResponse getResponse()  {
+        URL url;
+		
         InputStream is = null;
         try {
-
+        	url = new URL(crawlDatum.getUrl());
+    		
+            HttpResponse response = new HttpResponse(url);
+            int code = -1;
+            int maxRedirect = Math.max(0, MAX_REDIRECT);
+            HttpURLConnection con = null;
+           
             for (int redirect = 0; redirect <= maxRedirect; redirect++) {
                 if (proxy == null) {
                     con = (HttpURLConnection) url.openConnection();
@@ -173,12 +179,21 @@ public class HttpRequest {
 
             return response;
         } catch (Exception ex) {
-            throw ex;
+        	
+        	AutoParseCrawler.badProxy(proxy);
+        		
+          //  throw ex;
         } finally {
             if (is != null) {
-                is.close();
+                try {
+					is.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
         }
+		return null;
     }
 
     public void config(HttpURLConnection con) throws Exception {

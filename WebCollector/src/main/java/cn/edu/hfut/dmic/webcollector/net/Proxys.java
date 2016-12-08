@@ -26,6 +26,8 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.Random;
+
+import org.junit.experimental.theories.Theories;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +67,15 @@ public class Proxys extends ArrayList<Proxy> {
             LOG.info("Exception", ex);
         }
 
+    }
+    
+    public void remove(String proxyStr){
+    	String[] infos = proxyStr.split(":");
+        String ip = infos[0];
+        int port = Integer.valueOf(infos[1]);
+
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(ip, port));
+        this.remove(proxy);
     }
 
 
