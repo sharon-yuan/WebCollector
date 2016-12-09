@@ -35,6 +35,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -78,28 +79,42 @@ public class DemoSelenium {
             	java.net.Proxy proxy=proxys.nextRandom();
             	System.err.println(proxy);
        		 String []proxyarray=proxy.toString().split(":");
+       		 String proxyHost="114.239.205.227";
+       		 int proxyPort=8118;
             	FirefoxProfile profile = new FirefoxProfile();
             	profile.setPreference("network.proxy.type", 1);
-            	profile.setPreference("network.proxy.http", "114.239.205.227");
-            	profile.setPreference("network.proxy.http_port",Integer.valueOf("8118"));
-            	profile.setPreference("network.proxy.ssl",  "114.239.205.227");  
-            	  profile.setPreference("network.proxy.ssl_port", Integer.valueOf("8118"));
-            	  profile.setPreference("network.proxy.share_proxy_settings", true);
+            	profile.setPreference("network.proxy.http", proxyHost);
+            	profile.setPreference("network.proxy.http_port",proxyPort);
+            	profile.setPreference("network.proxy.ssl",  proxyHost);  
+            	  profile.setPreference("network.proxy.ssl_port", Integer.valueOf(proxyPort));
+            	  profile.setPreference("network.proxy.share_proxy_settings", false);
             	  profile.setPreference("network.proxy.no_proxies_on", "localhost");
             	 
             	WebDriver driver = new FirefoxDriver(profile);
             	//WebDriver driver = new FirefoxDriver();
             	try {
-            	driver.get("https://www.baidu.com/s?ie=UTF-8&wd=ip");
-            	 /*Select select=new Select(driver.findElement(By.id("dbselect")));
+            	driver.get("http://www.ccgp.gov.cn/");
+            	 Select select=new Select(driver.findElement(By.id("dbselect")));
             	 select.selectByValue("bidx");
             	  WebElement searchBox = driver.findElement(By.id("kw"));
-            	 
-            	  searchBox.sendKeys("视频会议");
-            	  WebElement saveButton = driver.findElement(By.id("doSearch1"));
-            	  saveButton.click();
+            	
+            	 searchBox.sendKeys("");
+            	  
+           	  WebElement searchPage=driver.findElement(By.name("page_index"));
+            JavascriptExecutor jse = (JavascriptExecutor)driver;
+            	//这种方式可用直接给隐藏域赋值
+            	String pageChange="document.getElementById('page_index').value='2'";
+            	String startTimeChange="document.getElementById('start_time').value='2016:1:1'";
+            	String endTimeChange="document.getElementById('end_time').value='2016:6:30'";
+            	jse.executeScript(pageChange);
+            	jse.executeScript(startTimeChange);
+            	jse.executeScript(endTimeChange);
+            	
+             	System.err.println( searchPage.getAttribute("value"));
+             	WebElement saveButton = driver.findElement(By.id("doSearch1"));
+          	  saveButton.click();
             	  org.jsoup.nodes.Document doc = Jsoup.parse(driver.getPageSource());
-            	  System.err.println( driver.getCurrentUrl());*/
+            	  System.err.println( driver.getCurrentUrl());
             	  
             	  
 					Thread.sleep(5000);
