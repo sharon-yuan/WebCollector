@@ -28,6 +28,7 @@ import cn.edu.hfut.dmic.webcollector.plugin.berkeley.BerkeleyDBManager;
 
 import java.io.File;
 import java.lang.reflect.Proxy;
+import java.sql.Driver;
 import java.util.List;
 
 import org.apache.log4j.Level;
@@ -73,17 +74,24 @@ public class DemoSelenium {
         Executor executor=new Executor() {
             @Override
             public void execute(CrawlDatum datum, CrawlDatums next)  {
+            	System.setProperty("webdriver.gecko.driver", "D:/MyDrivers/geckodriver-v0.11.1-win64/geckodriver.exe");
             	java.net.Proxy proxy=proxys.nextRandom();
             	System.err.println(proxy);
        		 String []proxyarray=proxy.toString().split(":");
-            	/*FirefoxProfile profile = new FirefoxProfile();
+            	FirefoxProfile profile = new FirefoxProfile();
             	profile.setPreference("network.proxy.type", 1);
-            	profile.setPreference("network.proxy.http", proxyarray[0]);
-            	profile.setPreference("network.proxy.http_port",Integer.valueOf(proxyarray[1]));*/
-            	System.setProperty("webdriver.gecko.driver", "D:/MyDrivers/geckodriver-v0.11.1-win64/geckodriver.exe");
-            	WebDriver driver = new FirefoxDriver();
-            	driver.get("http://www.ccgp.gov.cn/");
-            	 Select select=new Select(driver.findElement(By.id("dbselect")));
+            	profile.setPreference("network.proxy.http", "114.239.205.227");
+            	profile.setPreference("network.proxy.http_port",Integer.valueOf("8118"));
+            	profile.setPreference("network.proxy.ssl",  "114.239.205.227");  
+            	  profile.setPreference("network.proxy.ssl_port", Integer.valueOf("8118"));
+            	  profile.setPreference("network.proxy.share_proxy_settings", true);
+            	  profile.setPreference("network.proxy.no_proxies_on", "localhost");
+            	 
+            	WebDriver driver = new FirefoxDriver(profile);
+            	//WebDriver driver = new FirefoxDriver();
+            	try {
+            	driver.get("https://www.baidu.com/s?ie=UTF-8&wd=ip");
+            	 /*Select select=new Select(driver.findElement(By.id("dbselect")));
             	 select.selectByValue("bidx");
             	  WebElement searchBox = driver.findElement(By.id("kw"));
             	 
@@ -91,13 +99,17 @@ public class DemoSelenium {
             	  WebElement saveButton = driver.findElement(By.id("doSearch1"));
             	  saveButton.click();
             	  org.jsoup.nodes.Document doc = Jsoup.parse(driver.getPageSource());
-            	  System.err.println( driver.getCurrentUrl());
+            	  System.err.println( driver.getCurrentUrl());*/
             	  
-            	  try {
+            	  
 					Thread.sleep(5000);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					
+					driver.quit();
+					driver.close();
+				
+					
+				
 				} 
             	
             	
