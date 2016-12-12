@@ -43,8 +43,11 @@ import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
 
@@ -55,138 +58,116 @@ import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
  */
 public class DemoSelenium {
 
-    static {
-        //禁用Selenium的日志
-        Logger logger = Logger.getLogger("com.gargoylesoftware.htmlunit");
-        logger.setLevel(Level.OFF);
-    }
+	static {
+		// 禁用Selenium的日志
+		Logger logger = Logger.getLogger("com.gargoylesoftware.htmlunit");
+		logger.setLevel(Level.OFF);
+		logger = Logger.getLogger("cn.edu.hfut.dmic.webcollector.fetcher.Fetcher");
+		logger.setLevel(Level.OFF);
+	}
 
+	public static void main(String[] args) {
+		// Proxys proxys = new Proxys();
+		//
+		// List<String[]> proxyList =
+		// cn.edu.hfut.dmic.webcollector.net.proxyController.readerProxyFromDir();
+		// System.out.println(proxyList.get(0).length);
+		// for (String[] tempProxy : proxyList) {
+		// System.out.println(tempProxy[0] + " " + tempProxy[1]);
+		// proxys.add(tempProxy[0], Integer.valueOf(tempProxy[1]));
+		// }
 
-    public static void main(String[] args) {
-    	Proxys proxys=new Proxys();
+		Executor executor = new Executor() {
+			@Override
+			public void execute(CrawlDatum datum, CrawlDatums next) {
+				System.setProperty("webdriver.gecko.driver",
+						"D:\\Softwares\\geckodriver-v0.11.1-win64\\geckodriver.exe");
+				// java.net.Proxy proxy = proxys.nextRandom();
+				// System.err.println(proxy);
+				// String[] proxyarray = proxy.toString().split(":");
+				System.setProperty("webdriver.firefox.bin", "D:\\Softwares\\firefox\\firefox.exe");
+				String proxyHost = "222.211.53.201";
+				int proxyPort = 8118;
+				FirefoxProfile profile = new FirefoxProfile();
+				profile.setPreference("network.proxy.type", 1);
+				profile.setPreference("network.proxy.http", proxyHost);
+				profile.setPreference("network.proxy.http_port", proxyPort);
+				profile.setPreference("network.proxy.ssl", proxyHost);
+				profile.setPreference("network.proxy.ssl_port", Integer.valueOf(proxyPort));
+				profile.setPreference("network.proxy.share_proxy_settings", false);
+				profile.setPreference("network.proxy.no_proxies_on", "localhost");
+				profile.setPreference("permissions.default.image", 2);
 
-		List<String[]> proxyList=cn.edu.hfut.dmic.webcollector.net.proxyController.readerProxyFromDir();
-		System.out.println(proxyList.get(0).length);
-		for(String[]tempProxy:proxyList){
-			System.out.println(tempProxy[0]+" "+tempProxy[1]);
-			proxys.add(tempProxy[0],Integer.valueOf(tempProxy[1]));
-		}
-		
-        Executor executor=new Executor() {
-            @Override
-            public void execute(CrawlDatum datum, CrawlDatums next)  {
-            	System.setProperty("webdriver.gecko.driver", "D:/MyDrivers/geckodriver-v0.11.1-win64/geckodriver.exe");
-            	java.net.Proxy proxy=proxys.nextRandom();
-            	System.err.println(proxy);
-       		 String []proxyarray=proxy.toString().split(":");
-       		 String proxyHost="114.239.205.227";
-       		 int proxyPort=8118;
-            	FirefoxProfile profile = new FirefoxProfile();
-            	profile.setPreference("network.proxy.type", 1);
-            	profile.setPreference("network.proxy.http", proxyHost);
-            	profile.setPreference("network.proxy.http_port",proxyPort);
-            	profile.setPreference("network.proxy.ssl",  proxyHost);  
-            	  profile.setPreference("network.proxy.ssl_port", Integer.valueOf(proxyPort));
-            	  profile.setPreference("network.proxy.share_proxy_settings", false);
-            	  profile.setPreference("network.proxy.no_proxies_on", "localhost");
-            	 
-            	WebDriver driver = new FirefoxDriver(profile);
-            	//WebDriver driver = new FirefoxDriver();
-            	try {
-            	driver.get("http://www.ccgp.gov.cn/");
-            	 Select select=new Select(driver.findElement(By.id("dbselect")));
-            	 select.selectByValue("bidx");
-            	  WebElement searchBox = driver.findElement(By.id("kw"));
-            	
-            	 searchBox.sendKeys("");
-            	  
-           	  WebElement searchPage=driver.findElement(By.name("page_index"));
-            JavascriptExecutor jse = (JavascriptExecutor)driver;
-            	//这种方式可用直接给隐藏域赋值
-            	String pageChange="document.getElementById('page_index').value='2'";
-            	String startTimeChange="document.getElementById('start_time').value='2016:1:1'";
-            	String endTimeChange="document.getElementById('end_time').value='2016:6:30'";
-            	jse.executeScript(pageChange);
-            	jse.executeScript(startTimeChange);
-            	jse.executeScript(endTimeChange);
-            	
-             	System.err.println( searchPage.getAttribute("value"));
-             	WebElement saveButton = driver.findElement(By.id("doSearch1"));
-          	  saveButton.click();
-            	  org.jsoup.nodes.Document doc = Jsoup.parse(driver.getPageSource());
-            	  System.err.println( driver.getCurrentUrl());
-            	  
-            	  
-					Thread.sleep(5000);
+				// 关掉flash
+				profile.setPreference("dom.ipc.plugins.enabled.libflashplayer.so", false);
+				// 禁用css,不方便调试了。。
+				// fireFoxProfile.setPreference("permissions.default.stylesheet",
+				// 2);
+				// 启动快速加载，不过好像没什么改变。照官方说法在load结束前就可以开始操作，不过我这还是被blocked直到页面加载完毕
+				profile.setPreference("webdriver.load.strategy", "unstable");
+
+				WebDriver driver = new FirefoxDriver(profile);
+				// WebDriver driver = new FirefoxDriver();
+				try {
+					driver.get("http://www.ccgp.gov.cn/");
+					Select select = new Select(driver.findElement(By.id("dbselect")));
+					select.selectByValue("bidx");
+
+					WebElement searchPage = driver.findElement(By.name("page_index"));
+					JavascriptExecutor jse = (JavascriptExecutor) driver;
+					// 这种方式可用直接给隐藏域赋值
+					String pageChange = "document.getElementById('page_index').value='2'";
+					String startTimeChange = "document.getElementById('start_time').value='2016:1:1'";
+					String endTimeChange = "document.getElementById('end_time').value='2016:6:30'";
+					jse.executeScript(pageChange);
+					jse.executeScript(startTimeChange);
+					jse.executeScript(endTimeChange);
+
+					WebElement searchBox = driver.findElement(By.id("kw"));
+					searchBox.sendKeys("视频");
+
+					System.err.println("searchPage.value = " + searchPage.getAttribute("value"));
+					WebElement saveButton = driver.findElement(By.id("doSearch1"));
+					System.err.println("click.");
+					saveButton.click();
+					System.err.println("click done");
+					System.out.println("Page title 1 is: " + driver.getTitle());
+
+					(new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+						public Boolean apply(WebDriver d) {
+							WebElement searchBox = driver.findElement(By.id("inpProjectId"));
+							if (searchBox == null) {
+								return false;
+							} else {
+								return true;
+							}
+						}
+					});
+
+					org.jsoup.nodes.Document doc = Jsoup.parse(driver.getPageSource());
+					System.err.println("driver.URL　＝　" + driver.getCurrentUrl());
+					System.out.println("Page title 2 is: " + driver.getTitle());
+					System.err.println("doc.text()　＝　" + doc.html());
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
-					
 					driver.quit();
 					driver.close();
-				
-					
-				
-				} 
-            	
-            	
-            	/* System.setProperty("webdriver.chrome.driver", "D:/MyDrivers/chromedriver_win32/chromedriver.exe");
-            	 boolean finished=false;
-            	 while(!finished){
-            		 java.net.Proxy proxy=proxys.nextRandom();
-            		 String []proxyarray=proxy.toString().split(":");
-            	 ChromeOptions options = new ChromeOptions();
-            	 System.err.println("--proxy-server=socks5://" + proxyarray[0] + ":" + Integer.valueOf(proxyarray[1]));
-            	    options.addArguments("--proxy-server=socks5://" + proxyarray[0] + ":" + Integer.valueOf(proxyarray[1]));
-            	    WebDriver driver = new ChromeDriver(options);
-          
-            	  try {driver.get("http://www.ccgp.gov.cn/");
-            	  Thread.sleep(5000);  // Let the user actually see something!
-            	 Select select=new Select(driver.findElement(By.id("dbselect")));
-            	 select.selectByValue("bidx");
-            	  WebElement searchBox = driver.findElement(By.id("kw"));
-            	 
-            	  searchBox.sendKeys("视频会议");
-            	  WebElement saveButton = driver.findElement(By.id("doSearch1"));
-            	  saveButton.click();
-            	  org.jsoup.nodes.Document doc = Jsoup.parse(driver.getPageSource());
-            	  System.err.println( driver.getCurrentUrl());
-            	  
-            	  Thread.sleep(5000); 
-            	  finished=true;
-            	//  driver.quit();
-            	  }
-            	  catch(Exception ex){
-            		  System.err.println("~~~====~~~");
-            		proxys.remove(proxy.toString());
-            		  driver.quit();
-            	  }
-            	  }*/
-            	   // Let the user actually see something!
-            	
-            	 
-            	/*  Thread.sleep(1000); 
-              driver.close();
-               */
-                //System.err.println(proxy.toString()+"----"+strList[0]+":"+Integer.valueOf(strList[1]));
-              
-            
-               
-               
-                		//findElementByCssSelector("span#outlink1");
-               
-            }
-        };
+				}
 
-        //创建一个基于伯克利DB的DBManager
-        DBManager manager=new BerkeleyDBManager("crawl1111");
-        //创建一个Crawler需要有DBManager和Executor
-        Crawler crawler= new Crawler(manager,executor);
-        crawler.addSeed("http://www.ccgp.gov.cn/");
-        try {
+			}
+		};
+
+		// 创建一个基于伯克利DB的DBManager
+		DBManager manager = new BerkeleyDBManager("crawl1111");
+		// 创建一个Crawler需要有DBManager和Executor
+		Crawler crawler = new Crawler(manager, executor);
+		crawler.addSeed("http://www.ccgp.gov.cn/");
+		try {
 			crawler.start(1);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    }
+	}
 
 }
