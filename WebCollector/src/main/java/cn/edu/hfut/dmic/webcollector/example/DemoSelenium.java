@@ -35,6 +35,7 @@ import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.net.telnet.TelnetClient;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -84,30 +85,33 @@ public class DemoSelenium {
 		Executor executor = new Executor() {
 			@Override
 			public void execute(CrawlDatum datum, CrawlDatums next) {
+//				System.setProperty("webdriver.gecko.driver",
+//						"D:\\MyDrivers\\geckodriver-v0.11.1-win64\\geckodriver.exe");
 				System.setProperty("webdriver.gecko.driver",
-						"D:\\MyDrivers\\geckodriver-v0.11.1-win64\\geckodriver.exe");
+						"D:\\Softwares\\geckodriver-v0.11.1-win64\\geckodriver.exe");
+				System.setProperty("webdriver.firefox.bin", "D:\\Softwares\\firefox\\firefox.exe");
 				boolean openedFlag = false;
 				while (!openedFlag) {
 					java.net.Proxy proxy = proxys.nextRandom();
 
-					try {
-						boolean status = InetAddress.getByName(proxy.toString().split("/")[1].split(":")[0])
-								.isReachable(300);
-						if (!status) {
-							System.err.println("remove proxy : " + proxy);
-							proxys.remove(proxy);
-							continue;
-						}
-					} catch (Exception e1) {
-						e1.printStackTrace();
-						proxys.remove(proxy);
-						System.err.println("remove proxy : " + proxy);
-						continue;
-					} 
-					System.err.println("use proxy : " + proxy);
+					
 					String[] proxyarray = proxy.toString().split(":");
 					String proxyHost = proxyarray[0].split("/")[1];
 					int proxyPort = Integer.valueOf(proxyarray[1]);
+					
+					//检测该代理是否可用
+		            TelnetClient telnetClient = new TelnetClient("vt200");  //指明Telnet终端类型，否则会返回来的数据中文会乱码
+		            telnetClient.setDefaultTimeout(3000); //socket延迟时间：1000ms
+		            System.err.println("try proxy " + proxy);
+		            try {
+						telnetClient.connect(proxyHost,proxyPort);
+					} catch (IOException e1) {
+						proxys.remove(proxy);
+						System.err.println("remove proxy : " + proxy);
+						//e1.printStackTrace();
+						continue;
+					}  
+		            System.err.println("use proxy : " + proxy);
 					/*
 					 * String proxyHost = "222.211.53.201"; int proxyPort =
 					 * 8118;
@@ -133,9 +137,7 @@ public class DemoSelenium {
 					WebDriver driver = new FirefoxDriver(profile);
 
 					try {
-						System.out.println("1");
 						driver.get("http://www.ccgp.gov.cn/");
-						System.out.println("2");
 						Select select = new Select(driver.findElement(By.id("dbselect")));
 						select.selectByValue("bidx");
 
@@ -148,15 +150,12 @@ public class DemoSelenium {
 						jse.executeScript(pageChange);
 						jse.executeScript(startTimeChange);
 						jse.executeScript(endTimeChange);
-						System.out.println("3");
 						WebElement searchBox = driver.findElement(By.id("kw"));
 						searchBox.sendKeys("视频");
 
 						System.err.println("searchPage.value = " + searchPage.getAttribute("value"));
 						WebElement saveButton = driver.findElement(By.id("doSearch1"));
-						System.err.println("click.");
 						saveButton.click();
-						System.err.println("click done");
 						System.out.println("Page title 1 is: " + driver.getTitle());
 
 						(new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
@@ -173,7 +172,7 @@ public class DemoSelenium {
 						org.jsoup.nodes.Document doc = Jsoup.parse(driver.getPageSource());
 						System.err.println("driver.URL　＝　" + driver.getCurrentUrl());
 						System.out.println("Page title 2 is: " + driver.getTitle());
-						System.err.println("doc.text()　＝　" + doc.html());
+						//System.err.println("doc.text()　＝　" + doc.html());
 						Thread.sleep(1000);
 						ArrayList<String> a;
 						openedFlag = true;
