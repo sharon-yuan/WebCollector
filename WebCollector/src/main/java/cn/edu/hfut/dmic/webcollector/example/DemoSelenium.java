@@ -28,12 +28,17 @@ import cn.edu.hfut.dmic.webcollector.plugin.berkeley.BerkeleyDBManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Proxy;
+import java.io.InputStream;
+import java.net.Proxy;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.net.telnet.TelnetClient;
 import org.apache.log4j.Level;
@@ -85,8 +90,8 @@ public class DemoSelenium {
 		Executor executor = new Executor() {
 			@Override
 			public void execute(CrawlDatum datum, CrawlDatums next) {
-//				System.setProperty("webdriver.gecko.driver",
-//						"D:\\MyDrivers\\geckodriver-v0.11.1-win64\\geckodriver.exe");
+				// System.setProperty("webdriver.gecko.driver",
+				// "D:\\MyDrivers\\geckodriver-v0.11.1-win64\\geckodriver.exe");
 				System.setProperty("webdriver.gecko.driver",
 						"D:\\Softwares\\geckodriver-v0.11.1-win64\\geckodriver.exe");
 				System.setProperty("webdriver.firefox.bin", "D:\\Softwares\\firefox\\firefox.exe");
@@ -94,24 +99,51 @@ public class DemoSelenium {
 				while (!openedFlag) {
 					java.net.Proxy proxy = proxys.nextRandom();
 
-					
 					String[] proxyarray = proxy.toString().split(":");
 					String proxyHost = proxyarray[0].split("/")[1];
 					int proxyPort = Integer.valueOf(proxyarray[1]);
+
+					// 检测该代理是否可用telnet检测方式
+					// TelnetClient telnetClient = new TelnetClient("vt200");
+					// //指明Telnet终端类型，否则会返回来的数据中文会乱码
+					// telnetClient.setDefaultTimeout(3000); //socket延迟时间：1000ms
+					// System.err.println("try proxy " + proxy);
+					// try {
+					// telnetClient.connect(proxyHost,proxyPort);
+					// } catch (IOException e1) {
+					// proxys.remove(proxy);
+					// System.err.println("remove proxy : " + proxy);
+					// //e1.printStackTrace();
+					// continue;
+					// }
 					
-					//检测该代理是否可用
-		            TelnetClient telnetClient = new TelnetClient("vt200");  //指明Telnet终端类型，否则会返回来的数据中文会乱码
-		            telnetClient.setDefaultTimeout(3000); //socket延迟时间：1000ms
-		            System.err.println("try proxy " + proxy);
-		            try {
-						telnetClient.connect(proxyHost,proxyPort);
-					} catch (IOException e1) {
+					
+					// 代理检测方式  125.121.122.37 808
+					try {
+						Proxy tmpproxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));  
+						URL u = new URL("http://www.ccgp.gov.cn/");
+						HttpURLConnection con = (HttpURLConnection) u.openConnection(tmpproxy);
+						con.setConnectTimeout(3000);
+						con.setReadTimeout(3000);
+						InputStream inStrm = con.getInputStream();
+						StringBuffer out = new StringBuffer();
+						byte[] b = new byte[4096];
+						for (int n; (n = inStrm.read(b)) != -1;) {
+							out.append(new String(b, 0, n));
+						}
+						//System.out.println("page is " + out.toString());
+						if (!out.toString().contains("<title>中国政府采购网_首页</title>")) {
+							proxys.remove(proxy);
+							System.err.println("remove proxy : " + proxy);
+							continue;
+						}
+					} catch (Exception e) {
 						proxys.remove(proxy);
 						System.err.println("remove proxy : " + proxy);
-						//e1.printStackTrace();
 						continue;
-					}  
-		            System.err.println("use proxy : " + proxy);
+					} 
+					System.err.println("use proxy : " + proxy);
+					
 					/*
 					 * String proxyHost = "222.211.53.201"; int proxyPort =
 					 * 8118;
@@ -127,13 +159,13 @@ public class DemoSelenium {
 					profile.setPreference("permissions.default.image", 2);
 
 					// 关掉flash
-					profile.setPreference("dom.ipc.plugins.enabled.libflashplayer.so", false);
+					//profile.setPreference("dom.ipc.plugins.enabled.libflashplayer.so", false);
 					// 禁用css,不方便调试了。。
 					// fireFoxProfile.setPreference("permissions.default.stylesheet",
 					// 2);
 					// 启动快速加载，不过好像没什么改变。照官方说法在load结束前就可以开始操作，不过我这还是被blocked直到页面加载完毕
-					profile.setPreference("webdriver.load.strategy", "fast");
-
+					//profile.setPreference("webdriver.load.strategy", "fast");
+					
 					WebDriver driver = new FirefoxDriver(profile);
 
 					try {
@@ -172,7 +204,7 @@ public class DemoSelenium {
 						org.jsoup.nodes.Document doc = Jsoup.parse(driver.getPageSource());
 						System.err.println("driver.URL　＝　" + driver.getCurrentUrl());
 						System.out.println("Page title 2 is: " + driver.getTitle());
-						//System.err.println("doc.text()　＝　" + doc.html());
+						// System.err.println("doc.text() ＝ " + doc.html());
 						Thread.sleep(1000);
 						ArrayList<String> a;
 						openedFlag = true;
