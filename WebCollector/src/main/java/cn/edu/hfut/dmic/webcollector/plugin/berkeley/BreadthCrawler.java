@@ -18,6 +18,7 @@
 package cn.edu.hfut.dmic.webcollector.plugin.berkeley;
 
 import cn.edu.hfut.dmic.webcollector.crawler.AutoParseCrawler;
+import cn.edu.hfut.dmic.webcollector.crawler.AutoParseSeleniumCrawler;
 
 /**
  * BreadthCrawler是基于Berkeley DB的插件,于2.20版重新设计

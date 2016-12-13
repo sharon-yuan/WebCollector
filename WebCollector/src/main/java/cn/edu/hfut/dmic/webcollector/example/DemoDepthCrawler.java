@@ -70,7 +70,7 @@ public class DemoDepthCrawler extends BreadthCrawler{
         /*正则规则用于控制爬虫自动解析出的链接，用户手动添加的链接，例如添加的种子、或
           在visit方法中添加到next中的链接并不会参与正则过滤*/
         /*自动爬取类似"http://news.hfut.edu.cn/show-xxxxxxhtml"的链接*/
-       // crawler.addRegex("http://news.hfut.edu.cn/show-.*html");
+        crawler.addRegex("http://http://www.ccgp.gov.cn/cggg/dfgg/zbgg/.*html");
         /*不要爬取jpg|png|gif*/
         crawler.addRegex("-.*\\.(jpg|png|gif).*");
         /*不要爬取包含"#"的链接*/
@@ -78,7 +78,7 @@ public class DemoDepthCrawler extends BreadthCrawler{
         
         crawler.setTopN(5);
         
-        crawler.start(10);
+        crawler.start(2);
     }
 
 }
