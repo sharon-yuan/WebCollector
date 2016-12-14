@@ -27,14 +27,19 @@ import cn.edu.hfut.dmic.webcollector.net.HttpRequest;
 import cn.edu.hfut.dmic.webcollector.net.HttpResponse;
 import cn.edu.hfut.dmic.webcollector.net.Proxys;
 import cn.edu.hfut.dmic.webcollector.net.Requester;
+import cn.edu.hfut.dmic.webcollector.util.FileIO;
 import cn.edu.hfut.dmic.webcollector.util.RegexRule;
 
+import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.util.List;
 
+import org.apache.commons.net.telnet.TelnetClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -99,12 +104,24 @@ public abstract class AutoParseSeleniumCrawler extends Crawler implements Execut
 	/**/
 	@Override
 	public void execute(CrawlDatum datum, CrawlDatums next) throws Exception {
-		org.jsoup.nodes.Document doc=getResponseDoc();
+		org.jsoup.nodes.Document doc=getResponseDoc( datum);
 		 Links links = new Links().addByRegex(doc, regexRule);
+		 Elements elements=doc.getElementsByAttribute("href");
+			
+			String linkContent="";
+			for(Element element:elements){
+				if(element.attr("href").matches("http://www.ccgp.gov.cn/cggg/.*htm"))
+				{System.out.println(element.attr("href"));
+				
+				linkContent+=element.attr("href")+'\n';}
+			}
+		FileIO.saveintoFile("E:/data/china/links/"+datum.getUrl(),linkContent);
+		
+		System.err.println(linkContent);
          next.add(links);
 	}
 
-	private Document getResponseDoc() {
+	private Document getResponseDoc(CrawlDatum datum) {
 		org.jsoup.nodes.Document doc=null;
 		System.setProperty("webdriver.gecko.driver",
 				"D:\\MyDrivers\\geckodriver-v0.11.1-win64\\geckodriver.exe");
@@ -112,24 +129,25 @@ public abstract class AutoParseSeleniumCrawler extends Crawler implements Execut
 		while (!openedFlag) {
 			java.net.Proxy proxy = proxys.nextRandom();
 
-			try {
-				boolean status = InetAddress.getByName(proxy.toString().split("/")[1].split(":")[0])
-						.isReachable(300);
-				if (!status) {
-					System.err.println("remove proxy : " + proxy);
-					proxys.remove(proxy);
-					continue;
-				}
-			} catch (Exception e1) {
-				e1.printStackTrace();
-				proxys.remove(proxy);
-				System.err.println("remove proxy : " + proxy);
-				continue;
-			} 
-			System.err.println("use proxy : " + proxy);
+			
 			String[] proxyarray = proxy.toString().split(":");
 			String proxyHost = proxyarray[0].split("/")[1];
 			int proxyPort = Integer.valueOf(proxyarray[1]);
+
+			// 检测该代理是否可用telnet检测方式
+			 TelnetClient telnetClient = new TelnetClient("vt200");
+			// 指明Telnet终端类型，否则会返回来的数据中文会乱码
+			 telnetClient.setDefaultTimeout(300); //socket延迟时间：1000ms
+			 System.err.println("try proxy " + proxy);
+			 try {
+			telnetClient.connect(proxyHost,proxyPort);
+			 } catch (IOException e1) {
+			 proxys.remove(proxy);
+			 System.err.println("remove proxy : " + proxy);
+			
+			 continue;
+			 }
+			 System.err.println("use proxy:"+proxyHost+":"+proxyPort);
 			/*
 			 * String proxyHost = "222.211.53.201"; int proxyPort =
 			 * 8118;
@@ -164,7 +182,7 @@ public abstract class AutoParseSeleniumCrawler extends Crawler implements Execut
 				WebElement searchPage = driver.findElement(By.name("page_index"));
 				JavascriptExecutor jse = (JavascriptExecutor) driver;
 				// 这种方式可用直接给隐藏域赋值
-				String pageChange = "document.getElementById('page_index').value='2'";
+				String pageChange = "document.getElementById('page_index').value='"+datum.getUrl()+"'";
 				String startTimeChange = "document.getElementById('start_time').value='2016:1:1'";
 				String endTimeChange = "document.getElementById('end_time').value='2016:6:30'";
 				jse.executeScript(pageChange);

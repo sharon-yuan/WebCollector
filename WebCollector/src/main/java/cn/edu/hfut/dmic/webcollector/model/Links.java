@@ -114,7 +114,8 @@ public class Links implements Iterable<String> {
         Elements as = doc.select("a[href]");
         for (Element a : as) {
             String href = a.attr("abs:href");
-            if (regexRule.satisfy(href)) {
+           // if (true) {
+          if (regexRule.satisfy(href)) {
                 this.add(href);
             }
         }

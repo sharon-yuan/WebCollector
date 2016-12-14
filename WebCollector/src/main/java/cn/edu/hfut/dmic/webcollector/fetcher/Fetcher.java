@@ -194,7 +194,7 @@ public class Fetcher {
                 }
 
             }
-
+System.err.println("QueueFeeder exit! hasMore:"+hasMore);
         }
 
     }

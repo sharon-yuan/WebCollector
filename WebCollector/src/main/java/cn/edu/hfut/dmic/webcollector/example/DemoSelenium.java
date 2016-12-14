@@ -22,9 +22,11 @@ import cn.edu.hfut.dmic.webcollector.crawler.Crawler;
 import cn.edu.hfut.dmic.webcollector.fetcher.Executor;
 import cn.edu.hfut.dmic.webcollector.model.CrawlDatum;
 import cn.edu.hfut.dmic.webcollector.model.CrawlDatums;
+import cn.edu.hfut.dmic.webcollector.model.Links;
 import cn.edu.hfut.dmic.webcollector.model.Page;
 import cn.edu.hfut.dmic.webcollector.net.Proxys;
 import cn.edu.hfut.dmic.webcollector.plugin.berkeley.BerkeleyDBManager;
+import cn.edu.hfut.dmic.webcollector.util.RegexRule;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,10 +74,10 @@ public class DemoSelenium {
 		// 禁用Selenium的日志
 		Logger logger = Logger.getLogger("com.gargoylesoftware.htmlunit");
 		logger.setLevel(Level.OFF);
-		logger = Logger.getLogger("cn.edu.hfut.dmic.webcollector.fetcher.Fetcher");
-		logger.setLevel(Level.OFF);
+		/*logger = Logger.getLogger("cn.edu.hfut.dmic.webcollector.fetcher.Fetcher");
+		logger.setLevel(Level.OFF);*/
 	}
-
+	protected RegexRule regexRule = new RegexRule();
 	public static void main(String[] args) {
 		ArrayList<String> urlList = new ArrayList<>();
 		Proxys proxys = new Proxys();
@@ -104,22 +106,22 @@ public class DemoSelenium {
 					int proxyPort = Integer.valueOf(proxyarray[1]);
 
 					// 检测该代理是否可用telnet检测方式
-					// TelnetClient telnetClient = new TelnetClient("vt200");
-					// //指明Telnet终端类型，否则会返回来的数据中文会乱码
-					// telnetClient.setDefaultTimeout(3000); //socket延迟时间：1000ms
-					// System.err.println("try proxy " + proxy);
-					// try {
-					// telnetClient.connect(proxyHost,proxyPort);
-					// } catch (IOException e1) {
-					// proxys.remove(proxy);
-					// System.err.println("remove proxy : " + proxy);
+					 TelnetClient telnetClient = new TelnetClient("vt200");
+					// 指明Telnet终端类型，否则会返回来的数据中文会乱码
+					 telnetClient.setDefaultTimeout(3000); //socket延迟时间：1000ms
+					 System.err.println("try proxy " + proxy);
+					 try {
+					telnetClient.connect(proxyHost,proxyPort);
+					 } catch (IOException e1) {
+					 proxys.remove(proxy);
+					 System.err.println("remove proxy : " + proxy);
 					// //e1.printStackTrace();
-					// continue;
-					// }
+					 continue;
+					 }
 					
 					
 					// 代理检测方式  125.121.122.37 808
-					try {
+					/*try {
 						Proxy tmpproxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));  
 						URL u = new URL("http://www.ccgp.gov.cn/");
 						HttpURLConnection con = (HttpURLConnection) u.openConnection(tmpproxy);
@@ -142,7 +144,7 @@ public class DemoSelenium {
 						System.err.println("remove proxy : " + proxy);
 						continue;
 					} 
-					System.err.println("use proxy : " + proxy);
+					System.err.println("use proxy : " + proxy);*/
 					
 					/*
 					 * String proxyHost = "222.211.53.201"; int proxyPort =
@@ -159,24 +161,25 @@ public class DemoSelenium {
 					profile.setPreference("permissions.default.image", 2);
 
 					// 关掉flash
-					//profile.setPreference("dom.ipc.plugins.enabled.libflashplayer.so", false);
+					profile.setPreference("dom.ipc.plugins.enabled.libflashplayer.so", false);
 					// 禁用css,不方便调试了。。
 					// fireFoxProfile.setPreference("permissions.default.stylesheet",
 					// 2);
 					// 启动快速加载，不过好像没什么改变。照官方说法在load结束前就可以开始操作，不过我这还是被blocked直到页面加载完毕
-					//profile.setPreference("webdriver.load.strategy", "fast");
+					profile.setPreference("webdriver.load.strategy", "fast");
 					
 					WebDriver driver = new FirefoxDriver(profile);
 
 					try {
 						driver.get("http://www.ccgp.gov.cn/");
+						System.err.println("========got page==============");
 						Select select = new Select(driver.findElement(By.id("dbselect")));
 						select.selectByValue("bidx");
-
+						int aRandomInt=(int) (100*Math.random());
 						WebElement searchPage = driver.findElement(By.name("page_index"));
 						JavascriptExecutor jse = (JavascriptExecutor) driver;
 						// 这种方式可用直接给隐藏域赋值
-						String pageChange = "document.getElementById('page_index').value='2'";
+						String pageChange = "document.getElementById('page_index').value='"+aRandomInt+"'";
 						String startTimeChange = "document.getElementById('start_time').value='2016:1:1'";
 						String endTimeChange = "document.getElementById('end_time').value='2016:6:30'";
 						jse.executeScript(pageChange);
@@ -192,12 +195,15 @@ public class DemoSelenium {
 
 						(new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
 							public Boolean apply(WebDriver d) {
+								if(driver.getPageSource().contains("<h1>403 Forbidden</h1>"))
+									return false;
 								WebElement searchBox = driver.findElement(By.id("inpProjectId"));
 								if (searchBox == null) {
 									return false;
 								} else {
 									return true;
 								}
+								
 							}
 						});
 
@@ -206,10 +212,13 @@ public class DemoSelenium {
 						System.out.println("Page title 2 is: " + driver.getTitle());
 						System.err.println("doc.text() ＝ " + doc.html());
 						
-						Thread.sleep(1000);
-						ArrayList<String> a;
+						if (doc != null) {
+							Links links = new Links();
+							next.add(links);
+						}
 						openedFlag = true;
-					} catch (InterruptedException e) {
+					} catch (Exception e) {
+						System.err.println("exceptions!!!!!!");
 						driver.quit();
 						driver.close();
 						openedFlag = false;
@@ -225,9 +234,13 @@ public class DemoSelenium {
 		DBManager manager = new BerkeleyDBManager("crawl1111");
 		// 创建一个Crawler需要有DBManager和Executor
 		Crawler crawler = new Crawler(manager, executor);
-		crawler.addSeed("http://www.ccgp.gov.cn/");
+		crawler.addSeed("http://www.ccgp.gov.cn/",true);
+		/*crawler.addSeed("http://wddwqaww.ccgp.gov.cn/",true);
+		crawler.addSeed("http://www.ccdwdwdwgp.gov.cn/",true);
+		crawler.addSeed("http://www.ccgp.gdwsdsdov.cn/",true);*/
 		try {
-			crawler.start(1);
+		
+			crawler.start(10);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

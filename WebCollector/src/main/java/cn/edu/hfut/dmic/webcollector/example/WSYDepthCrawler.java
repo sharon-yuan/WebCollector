@@ -67,12 +67,12 @@ public class WSYDepthCrawler extends AutoParseSeleniumCrawler{
 
     
     public static void main(String[] args)  {
-        WSYDepthCrawler crawler=new WSYDepthCrawler("depth_crawler", true);
-        /*for(int i=1;i<=5;i++){
-            crawler.addSeed(new CrawlDatum("http://search.ccgp.gov.cn/dataB.jsp?searchtype=1&page_index="+i+"&start_time=2016%3A11%3A29&end_time=2016%3A12%3A06&timeType=2&searchchannel=0&dbselect=bidx&kw=&bidSort=0&pinMu=0&bidType=0&buyerName=&projectId=&displayZone=&zoneId=&agentName=")
+        WSYDepthCrawler crawler=new WSYDepthCrawler("depth_crawler2", true);
+        for(int i=1;i<=3;i++){
+            crawler.addSeed(new CrawlDatum(i+"")
                     .meta("depth", "1"));
-        }*/
-        crawler.addSeed(new CrawlDatum("http://search.ccgp.gov.cn/dataB.jsp?searchtype=1&page_index=1&start_time=2016%3A11%3A29&end_time=2016%3A12%3A06&timeType=2&searchchannel=0&dbselect=bidx&kw=&bidSort=0&pinMu=0&bidType=0&buyerName=&projectId=&displayZone=&zoneId=&agentName="));
+        }
+        crawler.addSeed(new CrawlDatum("http://search.ccgp.gov.cn/dataB.jsp?searchtype=1&page_index=1&bidSort=2&buyerName=&projectId=&pinMu=0&bidType=1&dbselect=bidx&kw=&start_time=2016%3A01%3A01&end_time=2016%3A06%3A29&timeType=6&displayZone=&zoneId=&pppStatus=&agentName="));
         /*正则规则用于控制爬虫自动解析出的链接，用户手动添加的链接，例如添加的种子、或
           在visit方法中添加到next中的链接并不会参与正则过滤*/
         /*自动爬取类似"http://news.hfut.edu.cn/show-xxxxxxhtml"的链接*/
