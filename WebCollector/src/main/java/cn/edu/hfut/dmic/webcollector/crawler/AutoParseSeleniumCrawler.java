@@ -105,7 +105,7 @@ public abstract class AutoParseSeleniumCrawler extends Crawler implements Execut
 	@Override
 	public void execute(CrawlDatum datum, CrawlDatums next) throws Exception {
 		org.jsoup.nodes.Document doc=getResponseDoc( datum);
-		 Links links = new Links().addByRegex(doc, regexRule);
+		
 		 Elements elements=doc.getElementsByAttribute("href");
 			
 			String linkContent="";
@@ -118,7 +118,7 @@ public abstract class AutoParseSeleniumCrawler extends Crawler implements Execut
 		FileIO.saveintoFile("E:/data/china/links/"+datum.getUrl(),linkContent);
 		
 		System.err.println(linkContent);
-         next.add(links);
+         
 	}
 
 	private Document getResponseDoc(CrawlDatum datum) {
