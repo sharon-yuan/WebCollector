@@ -73,11 +73,11 @@ public class DemoSelenium {
 		Executor executor = new Executor() {
 			@Override
 			public void execute(CrawlDatum datum, CrawlDatums next) {
-				 System.setProperty("webdriver.gecko.driver",
-				 "D:\\MyDrivers\\geckodriver-v0.11.1-win64\\geckodriver.exe");
-				/*System.setProperty("webdriver.gecko.driver",
+//				 System.setProperty("webdriver.gecko.driver",
+//				 "D:\\MyDrivers\\geckodriver-v0.11.1-win64\\geckodriver.exe");
+				System.setProperty("webdriver.gecko.driver",
 						"D:\\Softwares\\geckodriver-v0.11.1-win64\\geckodriver.exe");
-				System.setProperty("webdriver.firefox.bin", "D:\\Softwares\\firefox\\firefox.exe");*/
+				System.setProperty("webdriver.firefox.bin", "D:\\Softwares\\firefox\\firefox.exe");
 				boolean openedFlag = false;
 				while (!openedFlag) {
 					java.net.Proxy proxy = proxys.nextRandom();

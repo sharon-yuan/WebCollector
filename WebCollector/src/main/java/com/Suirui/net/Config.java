@@ -23,7 +23,7 @@ public class Config {
     public static final String URLFilePath2 = "E:/data/china/retry/v2/";
     public static final String URLFilePathdone = "E:/data/china/retry/done/";
     public static final String URLFilePatherror = "E:/data/china/retry/error/";
-	public static final String PROXY_DIR = "E:/data/china/proxy/";
+	public static final String PROXY_DIR = "F:\\workspace5-mars\\WebCollector\\WebCollector\\proxys";
 	public static final String DEFAULT_HTTP_METHOD = "GET";
 	public static String DEFAULT_USER_AGENT="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:36.0) Gecko/20100101 Firefox/36.0";
     public static int MAX_RECEIVE_SIZE = 1000 * 1000;

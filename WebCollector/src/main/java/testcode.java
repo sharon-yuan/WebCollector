@@ -22,7 +22,8 @@ import cn.edu.hfut.dmic.webcollector.util.FileIO;
 
 public class testcode {
 	public static void main(String[]args){
-		int i = 54;
+		int i = 5135;
+		int bengkuiTimes=0;
 		Proxys proxys = new Proxys();
 
 		List<String[]> proxyList = cn.edu.hfut.dmic.webcollector.net.proxyController.readerProxyFromDir();
@@ -31,13 +32,21 @@ public class testcode {
 			System.out.println(tempProxy[0] + " " + tempProxy[1]);
 			proxys.add(tempProxy[0], Integer.valueOf(tempProxy[1]));
 		}
-		 System.setProperty("webdriver.gecko.driver",
-		 "D:\\MyDrivers\\geckodriver-v0.11.1-win64\\geckodriver.exe");
-		/*System.setProperty("webdriver.gecko.driver",
+//		 System.setProperty("webdriver.gecko.driver",
+//		 "D:\\MyDrivers\\geckodriver-v0.11.1-win64\\geckodriver.exe");
+		System.setProperty("webdriver.gecko.driver",
 				"D:\\Softwares\\geckodriver-v0.11.1-win64\\geckodriver.exe");
-		System.setProperty("webdriver.firefox.bin", "D:\\Softwares\\firefox\\firefox.exe");*/
+		System.setProperty("webdriver.firefox.bin", "D:\\Softwares\\firefox\\firefox.exe");
 		boolean openedFlag = false;
 		while (!openedFlag) {
+			if(proxys.size()<=3){
+				proxyList = cn.edu.hfut.dmic.webcollector.net.proxyController.readerProxyFromDir();
+				System.out.println(proxyList.get(0).length);
+				for (String[] tempProxy : proxyList) {
+					System.out.println(tempProxy[0] + " " + tempProxy[1]);
+					proxys.add(tempProxy[0], Integer.valueOf(tempProxy[1]));
+				}
+			}
 			java.net.Proxy proxy = proxys.nextRandom();
 
 			String[] proxyarray = proxy.toString().split(":");
@@ -200,13 +209,14 @@ public class testcode {
 							
 							linkContent+=element.attr("href")+'\n';}
 						}
-					FileIO.saveintoFile("E:/data/china/links/"+i,linkContent);
+					FileIO.saveintoFile("E:/data/china/links/"+i+"-"+bengkuiTimes,linkContent);
 					
 					WebElement nextButton = driver.findElement(By.className("next"));
 					System.err.println("click begin");
 					lasturl=driver.getCurrentUrl();
 					nextButton.click();
-					Thread.sleep(10000);
+					int sleepLongth=5000+(int) (Math.random()*5000);
+					Thread.sleep(sleepLongth);
 					int retryTimes=0;
 					while(driver.getCurrentUrl().equals(lasturl)){
 						retryTimes++;
@@ -220,6 +230,7 @@ public class testcode {
 				Thread.sleep(1000);
 				openedFlag = true;
 			} catch (Exception e) {
+				bengkuiTimes++;
 				driver.close();
 				driver.quit();
 				
