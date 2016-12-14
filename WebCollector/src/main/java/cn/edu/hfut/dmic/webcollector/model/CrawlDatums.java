@@ -66,6 +66,7 @@ public class CrawlDatums implements Iterable<CrawlDatum> {
     public CrawlDatums add(Links links) {
         for (String link : links) {
             add(link);
+            System.err.println(link);
         }
         return this;
     }

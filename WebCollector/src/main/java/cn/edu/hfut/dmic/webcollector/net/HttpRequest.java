@@ -89,7 +89,7 @@ public class HttpRequest {
         InputStream is = null;
         try {
         	url = new URL(crawlDatum.getUrl());
-    		
+    		System.err.println("start get response "+url);
             HttpResponse response = new HttpResponse(url);
             int code = -1;
             int maxRedirect = Math.max(0, MAX_REDIRECT);
@@ -101,7 +101,8 @@ public class HttpRequest {
                 } else {
                     con = (HttpURLConnection) url.openConnection(proxy);
                 }
-
+                con.setConnectTimeout(3000);
+				con.setReadTimeout(3000);
                 config(con);
                 
                 if(outputData!=null){
@@ -109,14 +110,16 @@ public class HttpRequest {
                     os.write(outputData);
                     os.close();
                 }
-
+                System.err.println("getResponse() finished config");
                 code = con.getResponseCode();
+                System.err.println("response code: "+code);
                 /*只记录第一次返回的code*/
                 if (redirect == 0) {
                     response.setCode(code);
                 }
                 
                 if(code==HttpURLConnection.HTTP_NOT_FOUND){
+                	System.err.println("code is"+code);
                     response.setNotFound(true);
                     return response;
                 }
@@ -176,13 +179,18 @@ public class HttpRequest {
             response.setContent(bos.toByteArray());
             response.setHeaders(con.getHeaderFields());
             bos.close();
-
+            if (!bos.toByteArray().toString().contains("<title>标讯库搜索_中国政府采购网</title>")) {
+				System.err.println(bos.toString());
+				System.err.println(bos.toByteArray());
+				return null;
+			}
             return response;
         } catch (Exception ex) {
         	
         	AutoParseCrawler.badProxy(proxy);
         		
-          //  throw ex;
+         
+            
         } finally {
             if (is != null) {
                 try {
@@ -194,6 +202,7 @@ public class HttpRequest {
             }
         }
 		return null;
+		
     }
 
     public void config(HttpURLConnection con) throws Exception {

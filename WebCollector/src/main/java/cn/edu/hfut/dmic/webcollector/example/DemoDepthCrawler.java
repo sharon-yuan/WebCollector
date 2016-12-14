@@ -39,7 +39,8 @@ public class DemoDepthCrawler extends BreadthCrawler{
     public void visit(Page page, CrawlDatums next) {
     	
         System.out.println("visiting:"+page.getUrl()+"\tdepth="+page.meta("depth"));
-        System.err.println(page.getHtml());
+        System.err.println("html 长度"+page.getHtml().length());
+        
     }
 
     @Override

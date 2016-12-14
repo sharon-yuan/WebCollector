@@ -71,10 +71,14 @@ public class Proxys extends ArrayList<Proxy> {
     
     public void remove(String proxyStr){
     	String[] infos = proxyStr.split(":");
+    
         String ip = infos[0];
+        if(ip.contains("/"))
+        	ip=ip.split("/")[1];
         int port = Integer.valueOf(infos[1]);
 
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(ip, port));
+        if(!this.contains(proxy)){System.err.println("proxys doesn't contain proxy!"+ip+":"+port);}
         this.remove(proxy);
     }
 

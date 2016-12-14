@@ -1,4 +1,4 @@
-package com.Suirui.net;
+package cn.edu.hfut.dmic.webcollector.example;
 /*
  * Copyright (C) 2015 hu
  *
@@ -32,12 +32,14 @@ import cn.edu.hfut.dmic.webcollector.plugin.berkeley.BreadthCrawler;
  * 
  * @author hu
  */
-public class DepthCrawler extends AutoParseSeleniumCrawler{
+public class WSYDepthCrawler extends AutoParseSeleniumCrawler{
 
-    public DepthCrawler(String crawlPath, boolean autoParse) {
-        super( autoParse);
-        this.dbManager=new BerkeleyDBManager(crawlPath);
-    }
+    public WSYDepthCrawler(String crawlPath,boolean autoParse) {
+    	 super( autoParse);
+         this.dbManager=new BerkeleyDBManager(crawlPath);
+	}
+
+	
 
     @Override
     public void visit(Page page, CrawlDatums next) {
@@ -65,7 +67,7 @@ public class DepthCrawler extends AutoParseSeleniumCrawler{
 
     
     public static void main(String[] args)  {
-        DepthCrawler crawler=new DepthCrawler("depth_crawler", true);
+        WSYDepthCrawler crawler=new WSYDepthCrawler("depth_crawler", true);
         /*for(int i=1;i<=5;i++){
             crawler.addSeed(new CrawlDatum("http://search.ccgp.gov.cn/dataB.jsp?searchtype=1&page_index="+i+"&start_time=2016%3A11%3A29&end_time=2016%3A12%3A06&timeType=2&searchchannel=0&dbselect=bidx&kw=&bidSort=0&pinMu=0&bidType=0&buyerName=&projectId=&displayZone=&zoneId=&agentName=")
                     .meta("depth", "1"));

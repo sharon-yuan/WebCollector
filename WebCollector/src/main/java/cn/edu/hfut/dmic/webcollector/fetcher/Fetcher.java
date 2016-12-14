@@ -246,7 +246,7 @@ public class Fetcher {
                             crawlDatum.setStatus(CrawlDatum.STATUS_DB_FAILED);
                             crawlDatum.incrExecuteCount(1);
                             System.err.println("next size---"+next.size());
-                            next.add(crawlDatum);
+                          //  executor.execute(crawlDatum, next);
                             System.err.println("next size---"+next.size());
                             
                             throw ex;
